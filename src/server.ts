@@ -108,7 +108,6 @@ app.put('/movies/:id', async (req, res) => {
     res.status(200).send();
 });
 
-
 // Rota para deletar um filme existente
 app.delete('/movies/:id', async (req, res) => {
     const id = Number(req.params.id);
@@ -132,13 +131,40 @@ app.delete('/movies/:id', async (req, res) => {
                 id,
             },
         });
-        
     } catch (error) {
         // Caso dê algum erro no bloco try, como um erro de conexão com o banco de dados ou um erro inesperado, ele será capturado aqui e uma resposta de erro 500 será enviada para o cliente, indicando que houve um problema no servidor ao tentar processar a requisição
         return res.status(500).send({ error: 'Erro ao deletar o filme' });
     }
     // Retornar resposta de sucesso
     res.status(200).send();
+});
+
+// Rota para filtrar filmes por gênero
+app.get('/movies/genre/:genreName', async (req, res) => {
+    // Receber o nome do gênero a ser filtrado a partir dos parâmetros da URL usando req.params
+    console.log(req.params.genreName);
+
+    try {
+        //Filtrar os filmes do banco pelo gênero usando o método findMany do Prisma, onde a condição de filtragem é baseada no nome do gênero, utilizando a opção mode: 'insensitive' para garantir que a busca seja case-insensitive, ou seja, não diferencie maiúsculas de minúsculas
+        const moviesFilteredByName = await prisma.movie.findMany({
+            where: {
+                genres: {
+                    name: {
+                        equals: req.params.genreName,
+                        mode: 'insensitive',
+                    },
+                },
+            },
+            include: {
+                genres: true,
+                languages: true,
+            },
+        });
+        // Retornar os filmes filtrados como resposta JSON usando res.json
+        res.status(200).send(moviesFilteredByName);
+    } catch (error) {
+        res.status(500).send({ error: 'Erro ao filtrar os filmes por gênero' });
+    }
 });
 
 // Porta onde o servidor irá escutar
