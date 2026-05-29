@@ -1,5 +1,7 @@
 import express from 'express';
 import { PrismaClient } from './generated/prisma/index.js';
+import swaggerUi from 'swagger-ui-express';
+import swaggerDocument from '../swagger.json' with { type: 'json' };
 
 const port = 3000;
 const app = express();
@@ -7,6 +9,8 @@ const prisma = new PrismaClient();
 
 // Preparando o servidor para receber requisições JSON no corpo das requisições
 app.use(express.json());
+
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 // Rota para obter todos os filmes
 app.get('/movies', async (_, res) => {
